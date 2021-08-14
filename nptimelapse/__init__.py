@@ -1,4 +1,5 @@
 import os
+import re
 
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -17,8 +18,11 @@ def create_app(test_config=None):
     app.config['SECRET_KEY'] = config_from_env('SECRET_KEY', 'zmien to')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = \
         config_from_env('SQLALCHEMY_TRACK_MODIFICATIONS', False)
-    app.config['SQLALCHEMY_DATABASE_URI'] = \
-        config_from_env('DATABASE_URL', False)
+
+    uri = os.getenv('DATABASE_URL')
+    if uri.startswith('postgres://'):
+        uri = uri.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = uri
 
     # load testing config if testing
     if test_config is not None:
