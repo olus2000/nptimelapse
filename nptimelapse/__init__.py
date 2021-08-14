@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 ##from nptimelapse import auth, index
 ##from nptimelapse.model import
-##from nptimelapse.cli import 
+from nptimelapse.cli import init_db
 from nptimelapse.db import db
 
 
@@ -47,7 +47,7 @@ def create_app(test_config=None):
     # app.register_blueprint(user.bp)
 
     # commandline arguments
-    # app.cli.add_command(init_db)
+    app.cli.add_command(init_db)
 
     return app
 
