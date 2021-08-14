@@ -1,1 +1,3 @@
 gunicorn
+flask
+flask-sqlalchemy
