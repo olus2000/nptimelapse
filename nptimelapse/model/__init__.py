@@ -24,7 +24,7 @@ class Owner(db.Model):
     __tablename__ = 'owner'
     tick = db.Column('tick', db.Integer(), primary_key=True)
     star_id = db.Column('starid', db.Integer(), primary_key=True)
-    game_id = db.Column('gameid', db.BigInteger() db.ForeignKey('game.id'),
+    game_id = db.Column('gameid', db.BigInteger(), db.ForeignKey('game.id'),
                         primary_key = True)
     player = db.Column('player', db.SmallInteger(), nullable=False)
     __table_args__ = (
