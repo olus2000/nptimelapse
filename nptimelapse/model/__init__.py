@@ -28,7 +28,7 @@ class Owner(db.Model):
                         primary_key = True)
     player = db.Column('player', db.SmallInteger(), nullable=False)
     __table_args__ = (
-        ForeignKeyConstraint(
+        db.ForeignKeyConstraint(
             ['star_id', 'game_id'],
             ['star.id', 'star.game_id'],
         ),
