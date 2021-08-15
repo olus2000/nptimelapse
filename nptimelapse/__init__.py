@@ -1,5 +1,6 @@
 import os
 import re
+import time
 
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -43,6 +44,12 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return 'Henlo warld!'
+
+    # the long wait page
+    @app.route('/stop')
+    def wait_a_minute():
+        time.sleep(20)
+        return 'Hammer time!'
 
     # pages
     # app.register_blueprint(auth.bp)
