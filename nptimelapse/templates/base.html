@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/400x400.png') }}"/>
+    
+    <!-- uikit -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit/dist/css/uikit.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/uikit/dist/js/uikit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/uikit/dist/js/uikit-icons.min.js"></script>
+
+    <!-- mithril -->
+    <script src='https://unpkg.com/mithril/mithril.js'></script>
+
+</head>
+<body>
+<nav class="uk-navbar-container uk-navbar-transparent uk-dark uk-margin-small-top" uk-navbar>
+    <div class="uk-navbar-left">
+        <ul class="uk-navbar-nav">
+        </ul>
+    </div>
+    <div class="uk-navbar-center">
+        {% block header %}{% endblock %}
+    </div>
+    <div class='uk-navbar-right uk-margin-right'>
+        <ul class='uk-navbar-nav'>
+            <!--<li><a href="{{ url_for('auth.admin') }}">Administracja</a></li>-->
+        </ul>
+    </div>
+</nav>
+<section class="content">
+{% block content %}{% endblock %}
+</section>
+</body>
