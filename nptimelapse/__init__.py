@@ -5,7 +5,7 @@ import time
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
-##from nptimelapse import auth, index
+from nptimelapse import index
 ##from nptimelapse.model import
 from nptimelapse.cli import init_db
 from nptimelapse.db import db
@@ -52,7 +52,7 @@ def create_app(test_config=None):
         return 'Hammer time!'
 
     # pages
-    # app.register_blueprint(auth.bp)
+    app.register_blueprint(index.bp)
 
     # model
     # app.register_blueprint(user.bp)
