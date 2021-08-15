@@ -8,6 +8,7 @@ class Game(db.Model):
     name = db.Column('name', db.String(40), nullable=False)
     close_date = db.Column('close_date', db.DateTime())
     stars = db.relationship('Star')
+    owners = db.relationship('Owner')
 
 
 class Star(db.Model):
@@ -18,6 +19,7 @@ class Star(db.Model):
     x = db.Column('x', db.Float(), nullable=False)
     y = db.Column('y', db.Float(), nullable=False)
     owners = db.relationship('Owner')
+    game = db.relationship('Game', back_populates='stars')
 
 
 class Owner(db.Model):
@@ -33,3 +35,5 @@ class Owner(db.Model):
             ['star.id', 'star.game_id'],
         ),
     )
+    game = db.relationship('Game', back_populates='owners')
+    star = db.relationship('Star', back_populates='owners')
