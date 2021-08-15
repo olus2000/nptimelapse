@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+<h2>{% block title %}NP Timelapse{% endblock %}</h2>
+{% endblock %}
+
+
+{% block content %}
+    <a href={# url_for('index.add_game') #}>
+        <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
+            <h4>Add a game</h4>
+        </div>
+    </a>
+    {% for game in games %}
+    <a href={# url_for('index.game', number=game['number']) #}>
+        <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
+            <div uk-grid>
+                <div class='uk-width-expand'>
+                    <h4>
+                        {{ game['name'] }}
+                    </h4>
+                    {{ game['number'] }}
+                </div>
+                <div class='uk-width-auto'>
+                    {{ game['end_tick'] - game['start_tick'] + 1 }} ticks recorded.<br>
+                    {% if game['close_date'] %}
+                        Finished {{ game['close_date'].strftime('%Y/%M/%d') }}
+                    {% else %}
+                        Running
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+{% endblock %}
