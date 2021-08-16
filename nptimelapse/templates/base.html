@@ -18,14 +18,15 @@
 <nav class="uk-navbar-container uk-navbar-transparent uk-dark uk-margin-small-top" uk-navbar>
     <div class="uk-navbar-left">
         <ul class="uk-navbar-nav">
+            <li><a href={{ url_for('index.browse_games') }}>Home</a></li>
         </ul>
     </div>
     <div class="uk-navbar-center">
-        {% block header %}{% endblock %}
+        <h2 class="uk-navbar-item">{% block header %}{% endblock %}</h2>
     </div>
     <div class='uk-navbar-right uk-margin-right'>
         <ul class='uk-navbar-nav'>
-            <!--<li><a href="{# url_for('auth.admin') #}">Administracja</a></li>-->
+            <li><a href={# url_for('index.help') #}>Help</a></li>
         </ul>
     </div>
 </nav>
