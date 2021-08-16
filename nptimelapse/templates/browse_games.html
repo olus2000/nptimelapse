@@ -25,7 +25,7 @@
         </h4>
     </div>
     {% for game in games %}
-    <a href={# url_for('index.game', number=game['number']) #}>
+    <a href={# url_for('index.game_info', number=game['number']) #}>
         <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
             <div uk-grid>
                 <div class='uk-width-expand'>
@@ -35,7 +35,7 @@
                     {{ game['number'] }}
                 </div>
                 <div class='uk-width-auto'>
-                    {{ game['end_tick'] - game['start_tick'] + 1 }} ticks recorded.<br>
+                    {{ game['end_tick'] - game['start_tick'] + 1 }} ticks recorded<br>
                     {% if game['close_date'] %}
                         Finished {{ game['close_date'].strftime('%Y/%M/%d') }}
                     {% else %}

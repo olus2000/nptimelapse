@@ -21,7 +21,7 @@ def browse_games():
         # Check if game already exists
         exists = Game.query.filter(Game.id == game_id).one_or_none()
         if exists:
-            return redirect(url_for('index.game', game_id=game_id))
+            return redirect(url_for('index.game_info', game_id=game_id))
 
         # Fetch game data from ironhelmet API
         params = {'game_number': game_id,
@@ -57,7 +57,7 @@ def browse_games():
                           for star_id, star in data['stars'].items() if star['puid'] >= 0]
             db.session.add_all(new_owners)
             db.session.commit()
-            return redirect(url_for('index.game', game_id=game_id))
+            return redirect(url_for('index.game_info', game_id=game_id))
 
         # If an error happened the normal page is displayed
 
@@ -74,5 +74,8 @@ def browse_games():
     return render_template('browse_games.html', games=games)
 
 @bp.route('<int:game_id>/')
-def game(game_id):
+def game_info(game_id):
+    game = Game.query.filter(Game.id == game_id).one_or_none()
+    if not game:
+        return redirect(url_for('index.browse_games'))
     return f'Game {game_id}'
