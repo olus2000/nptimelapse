@@ -56,6 +56,7 @@ def browse_games():
                                 player=star['puid'])
                           for star_id, star in data['stars'].items() if star['puid'] >= 0]
             db.session.add_all(new_owners)
+            db.session.commit()
             return redirect(url_for('index.game', game_id=game_id))
 
         # If an error happened the normal page is displayed
