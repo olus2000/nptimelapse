@@ -44,7 +44,7 @@ def browse_games():
             # Register the new game in DB
             data = payload['scanning_data']
             db.session.add(Game(id=game_id, api_key=api_key, name=data['name']))
-            new stars = [Star(id=int(star_id),
+            new_stars = [Star(id=int(star_id),
                               game_id=game_id,
                               x=float(star['x']),
                               y=float(star['y']))
