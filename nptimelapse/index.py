@@ -73,5 +73,5 @@ def browse_games():
     return render_template('browse_games.html', games=games)
 
 @bp.route('<int:game_id>/')
-def game(id):
+def game(game_id):
     return f'Game {game_id}'
