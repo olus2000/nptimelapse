@@ -32,9 +32,9 @@ def browse_games():
         # Handle API errors
         if 'error' in payload:
             error = payload['error']
-            if error = 'code not found in game':
+            if error == 'code not found in game':
                 flash('Incorrect API key')
-            elif error = 'api_version not supported':
+            elif error == 'api_version not supported':
                 flash('API error. Contact the administartor')
             else:
                 flash('Incorrect game number')
