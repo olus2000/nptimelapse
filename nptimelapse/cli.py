@@ -46,8 +46,8 @@ def fetch_owners(test):
             owner = Owner.query.filter(Owner.game_id == game.id) \
                    .filter(Owner.star_id == int(star_id)) \
                    .order_by(Owner.tick.desc()).one_or_none()
-            if not owner and star_data['puid'] != -1 \
-            or owner.player != star_data['puid']:
+            if owner is None and star_data['puid'] != -1 \
+            or owner is not None and owner.player != star_data['puid']:
                 new_owners.append(Owner(tick=data['tick'], star_id=int(star_id),
                                         game_id=game.id, player=star_data['puid']))
     db.session.add_all(new_owners)
