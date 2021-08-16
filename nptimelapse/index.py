@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, url_for, flash
+from flask import Blueprint, render_template, url_for, flash, request
 from werkzeug.utils import redirect
 from sqlalchemy.sql import func
 
