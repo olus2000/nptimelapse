@@ -12,7 +12,7 @@ bp = Blueprint('index', __name__, url_prefix='')
 def browse_games():
     # Query games
     games = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-        .join(Game.owners).order_by(Game.id.desc()).all()
+        .join(Game.owners).group_by(Game.id).order_by(Game.id.desc()).all()
 
     games = [{'start_tick': g[0],
                 'end_tick': g[1],
