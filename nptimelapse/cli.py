@@ -28,7 +28,7 @@ def init_db(reset):
 @click.option('--test/--no-test', default=False)
 @with_appcontext
 def fetch_owners(test):
-    games = Game.query.filter(Game.close_date != None).all()
+    games = Game.query.filter(Game.close_date == None).all()
     new_owners = []
     for game in games:
         print(f'Fetching game {game.name}:{game.id}...')
