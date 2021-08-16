@@ -26,11 +26,18 @@
     </div>
     <div class='uk-navbar-right uk-margin-right'>
         <ul class='uk-navbar-nav'>
-            <li><a href={# url_for('index.help') #}>Help</a></li>]
+            <li><a href={# url_for('index.help') #}>Help</a></li>
         </ul>
     </div>
 </nav>
 <section class="content">
+{% if get_flashed_messages() %}
+    <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default flash'>
+        {% for message in get_flashed_messages() %}
+            {{ message }}<br>
+        {% endfor %}
+    </div>
+{% endif %}
 {% block content %}{% endblock %}
 </section>
 </body>
