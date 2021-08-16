@@ -35,5 +35,5 @@ class Owner(db.Model):
             ['star.id', 'star.game_id'],
         ),
     )
-    game = db.relationship('Game', back_populates='owners')
-    star = db.relationship('Star', back_populates='owners')
+    game = db.relationship('Game', back_populates='owners', overlaps='owners')
+    star = db.relationship('Star', back_populates='owners', overlaps='game,owners')

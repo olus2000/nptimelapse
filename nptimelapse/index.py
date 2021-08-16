@@ -21,3 +21,8 @@ def browse_games():
               'close_date': g[5]}
              for g in games]
     return render_template('browse_games.html', games=games)
+
+
+@bp.route('/new_game')
+def new_game():
+    return render_template('new_game.html')

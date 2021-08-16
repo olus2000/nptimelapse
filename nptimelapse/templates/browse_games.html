@@ -7,11 +7,22 @@
 
 
 {% block content %}
-    <a href={# url_for('index.add_game') #}>
-        <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
-            <h4>Add a game</h4>
-        </div>
-    </a>
+    <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
+        <h4>
+            <form action="{{ url_for('index.new_game') }}" uk-grid>
+                <div class="uk-width-expand" uk-margin>
+                    Game nr:
+                    <input class="uk-input" type="number" id="game_id" name="game_id" min="0">
+                    API key:
+                    <input class="uk-input uk-input-width-small" type="text" id="api_key"
+                        name="api_key"
+                </div>
+                <div class='uk-width-auto'>
+                    <input class='uk-button uk-button-primary' type='submit' value='Add game'>
+                </div>
+            </form>
+        </h4>
+    </div>
     {% for game in games %}
     <a href={# url_for('index.game', number=game['number']) #}>
         <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
