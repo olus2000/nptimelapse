@@ -27,7 +27,7 @@ def browse_games():
         params = {'game_number': game_id,
                          'code': api_key,
                   'api_version': '0.1'}
-        payload = requests.post('np.ironhelmet.com/api', params).json()
+        payload = requests.post('https://np.ironhelmet.com/api', params).json()
 
         # Handle API errors
         if 'error' in payload:
