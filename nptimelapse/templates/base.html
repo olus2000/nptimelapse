@@ -32,7 +32,8 @@
 </nav>
 <section class="content">
 {% if get_flashed_messages() %}
-    <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default flash'>
+    <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default flash'
+        style='background: #ff000028'>
         {% for message in get_flashed_messages() %}
             {{ message }}<br>
         {% endfor %}
