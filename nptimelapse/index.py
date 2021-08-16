@@ -67,9 +67,9 @@ def browse_games():
 
     games = [{'start_tick': g[0],
                 'end_tick': g[1],
-                  'number': g[2],
-                    'name': g[4],
-              'close_date': g[5]}
+                  'number': g[2].id,
+                    'name': g[2].name,
+              'close_date': g[2].close_date}
              for g in games]
     return render_template('browse_games.html', games=games)
 
