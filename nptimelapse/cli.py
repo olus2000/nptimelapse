@@ -45,7 +45,7 @@ def fetch_owners(test):
         for star_id, star_data in data['stars'].items():
             owner = Owner.query.filter(Owner.game_id == game.id) \
                    .filter(Owner.star_id == int(star_id)) \
-                   .orer_by(Owner.tick.desc()).one_or_none()
+                   .order_by(Owner.tick.desc()).one_or_none()
             if owner.player != star_data['puid']:
                 new_owners.append(Owner(tick=data['tick'], star_id=int(star_id),
                                         game_id=game.id, player=star_data['puid']))
