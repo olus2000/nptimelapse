@@ -37,7 +37,7 @@ def fetch_owners(test):
                          'code': game.api_key,
                   'api_version': 0.1}
         payload = requests.post('https://np.ironhelmet.com/api', params).json()
-        if error in payload:
+        if 'error' in payload:
             print(f'Fetch error on game {game.id}: {payload["error"]}')
             continue
         data = payload['scanning_data']
