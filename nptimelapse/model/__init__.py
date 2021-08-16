@@ -18,7 +18,7 @@ class Star(db.Model):
                         primary_key=True)
     x = db.Column('x', db.Float(), nullable=False)
     y = db.Column('y', db.Float(), nullable=False)
-    owners = db.relationship('Owner')
+    owners = db.relationship('Owner', overlaps='owners')
     game = db.relationship('Game', back_populates='stars')
 
 
