@@ -24,7 +24,7 @@ def browse_games():
             return redirect(url_for('index.game', game_id=game_id))
 
         # Fetch game data from ironhelmet API
-        params = {'game_number': game_nr,
+        params = {'game_number': game_id,
                          'code': api_key,
                   'api_version': '0.1'}
         payload = requests.post('np.ironhelmet.com/api', params).json()
