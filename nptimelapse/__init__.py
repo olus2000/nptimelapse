@@ -13,19 +13,10 @@ from nptimelapse.db import db
 
 def create_app(test_config=None):
     global db
-    app = Flask(__name__)
+    app = Flask(__name__, instance_relative_config=True)
 
-    # load config from envvars
-    app.config['SECRET_KEY'] = config_from_env('SECRET_KEY', 'zmien to')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = \
-        config_from_env('SQLALCHEMY_TRACK_MODIFICATIONS', False)
-
-    uri = os.getenv('DATABASE_URL')
-    if uri.startswith('postgres://'):
-        uri = uri.replace('postgres://', 'postgresql://', 1)
-    app.config['SQLALCHEMY_DATABASE_URI'] = uri
-
-    # load testing config if testing
+    # load config and overwrite if testing
+    app.config.from_pyfile('config.py', silent=True)
     if test_config is not None:
         app.config.from_mapping(test_config)
 
@@ -37,7 +28,8 @@ def create_app(test_config=None):
         pass
 
     # connect to database
-    # SQLALCHEMY_DATABASE_URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'] \
+        .format(instance=app.instance_path)
     db.init_app(app)
 
     # the simplest page

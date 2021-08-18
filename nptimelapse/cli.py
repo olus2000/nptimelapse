@@ -9,6 +9,7 @@ from nptimelapse.model import *
 
 from datetime import datetime
 import requests
+import logging
 
 
 @click.command('init-db')
@@ -28,17 +29,18 @@ def init_db(reset):
 @click.option('--test/--no-test', default=False)
 @with_appcontext
 def fetch_owners(test):
+    logging.basicConfig(format='%(asctime)s|%(levelname)s| %(message)s', level=logging.INFO)
     games = Game.query.filter(Game.close_date == None).all()
     new_owners = []
     for game in games:
-        print(f'Fetching game {game.name}:{game.id}...')
+        logging.info(f'Fetching game {game.name}:{game.id}...')
         # Fetch current star owners
         params = {'game_number': game.id,
                          'code': game.api_key,
                   'api_version': 0.1}
         payload = requests.post('https://np.ironhelmet.com/api', params).json()
         if 'error' in payload:
-            print(f'Fetch error on game {game.id}: {payload["error"]}')
+            logging.warning(f'Fetch error on game {game.id}: {payload["error"]}')
             continue
         data = payload['scanning_data']
         # Compare and update
@@ -53,4 +55,4 @@ def fetch_owners(test):
     db.session.add_all(new_owners)
     if not test:
         db.session.commit()
-    print('Fetching complete')
+    logging.info('Fetching complete')
