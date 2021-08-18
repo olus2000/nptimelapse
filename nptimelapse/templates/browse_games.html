@@ -25,7 +25,7 @@
         </h4>
     </div>
     {% for game in games %}
-    <a href={# url_for('index.game_info', number=game['number']) #}>
+    <a href={{ url_for('index.game_info', game_id=game['number']) }}>
         <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
             <div uk-grid>
                 <div class='uk-width-expand'>

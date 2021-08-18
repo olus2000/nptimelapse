@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+<h2>{% block title %}{{ game['name'] }}{% endblock %}</h2>
+{% endblock %}
+
+
+{% block content %}
+    <div class="uk-margin-auto uk-margin uk-width-1-3 uk-card uk-card-body uk-card-default">
+        <table class="uk-table uk-table-justify uk-width-1-1">
+            <caption>{{ game['name'] }}</caption>
+            <tbody>
+                <tr>
+                    <td style="text-align: left">Game number:</td>
+                    <td style="text-align: right">{{ game['number'] }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">Recorder length:</td>
+                    <td style="text-align: right">
+                        {{ game['end_tick'] - game['start_tick'] + 1 }} ticks
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">Status:</td>
+                    <td style="text-align: right">
+                        {% if game['close_date'] == None %}
+                            Running
+                        {% else %}
+                            Closed on {{ game['close_date'].strftime('%Y-%m-%d') }}
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="uk-margin" uk-grid>
+            <a class="uk-button uk-button-primary uk-align-right" type="video/mp4"
+                href="{# url_for('index.timelapse', game_id=game['number']) #}">
+                    Generate timelapse
+            </a>
+            <div class="uk-width-expand uk-margin-remove">
+            <a class="uk-button uk-button-default uk-align-right uk-margin-remove"
+                target="_blank" href="https://np.ironhelmet.com/game/{{ game['number'] }}">
+                    Visit game
+            </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

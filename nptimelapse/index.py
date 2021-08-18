@@ -75,7 +75,16 @@ def browse_games():
 
 @bp.route('<int:game_id>/')
 def game_info(game_id):
-    game = Game.query.filter(Game.id == game_id).one_or_none()
+    # Query games
+    game = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
+        .filter(Game.id == game_id).join(Game.owners).group_by(Game.id).one_or_none()
     if not game:
         return redirect(url_for('index.browse_games'))
-    return f'Game {game_id}'
+    
+    # Prepare data for the template
+    game = {'start_tick': game[0],
+              'end_tick': game[1],
+                'number': game[2].id,
+                  'name': game[2].name,
+            'close_date': game[2].close_date}
+    return render_template('game_info.html', game=game)
