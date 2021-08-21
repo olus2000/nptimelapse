@@ -5,15 +5,8 @@ from sqlalchemy.sql import func
 
 from nptimelapse.db import db
 from nptimelapse.model import Game, Star, Owner
-from nptimelapse.map_maker import Map
 
 import requests
-import os
-import os.path
-import glob
-from math import sqrt
-import moviepy.editor as mpy
-import logging
 
 
 bp = Blueprint('index', __name__, url_prefix='')
@@ -100,65 +93,20 @@ def game_info(game_id):
     return render_template('game_info.html', game=game)
 
 
-@bp.route('/game/<int:game_id>/timelapse.mp4')
-def timelapse(game_id):
-    logging.basicConfig(format='%(asctime)s|%(levelname)s| %(message)s',
-                        filename=os.path.join(current_app.instance_path, 'vid_gen.log'),
-                        level=logging.INFO)
-    
-    # Make sure the video cache exists
-    video_cache = os.path.join(current_app.instance_path, 'video_cache')
-    if not os.path.exists(video_cache):
-        os.mkdir(video_cache)
+'''
 
-    # Get basic game info
-    game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-        .filter(Game.id == game_id).join(Game.owners).group_by(Game.id).one_or_none()
-    if game_data is None:
         flash(f'Game {game_id} is not registered')
         return redirect(url_for('index.browse_games'))
-    start_tick, end_tick, game = game_data
+
     
     # Check if the timelapse is cached
     tl_path = os.path.join(video_cache, f'{game.name.replace(" ", "_")}_{game.id}.mp4')
     if os.path.exists(tl_path):
         return send_file(tl_path, as_attachment=True)
 
-    # Check for tmp folder to see if the timelapse is not being created by another worker
-    logging.info('Timelapse not found. Attempting generation.')
-    tmp_folder = os.path.join(video_cache, f'tmp')
-    if os.path.exists(tmp_folder):
-        logging.info('tmp_folder exists. Abort generation.')
+
         flash('An error occured during timelapse generation. Try again in a few minutes '
             'and contact the administartor if the problem persists.')
         return redirect(url_for('index.game_info', game_id=game_id))
-    os.mkdir(tmp_folder)
 
-    # Prepare the map
-    logging.info('Generation start...')
-    stars = Star.query.filter(Star.game_id == game_id).all()
-    m = Map(stars)
-
-    # Generate images
-    for tick in range(start_tick, end_tick + 1):
-        if tick % 24 == 0:
-            logging.info(f'Generating tick {tick}')
-        owners = Owner.query.filter(Owner.game_id == game_id) \
-            .filter(Owner.tick == tick).all()
-        m.update(owners)
-        m.save(os.path.join(tmp_folder, f'{tick:04}.png'))
-
-    # Make a video
-    images = glob.glob(os.path.join(tmp_folder, '*.png'))
-    images.sort()
-    video = mpy.ImageSequenceClip(images, fps=24)
-    video.write_videofile(tl_path)
-    
-    # Cleanup the tmp_folder
-    logging.info('Cleanup')
-    for image in images:
-        os.remove(image)
-    os.rmdir(tmp_folder)
-    logging.info('Generation successfull')
-
-    return send_file(tl_path, as_attachment=True)
+'''

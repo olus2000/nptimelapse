@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from nptimelapse import index
 # from nptimelapse.model import
-from nptimelapse.cli import init_db, fetch_owners
+from nptimelapse.cli import init_db, fetch_owners, make_timelapse
 from nptimelapse.db import db
 
 
@@ -51,6 +51,7 @@ def create_app(test_config=None):
     # commandline arguments
     app.cli.add_command(init_db)
     app.cli.add_command(fetch_owners)
+    app.cli.add_command(make_timelapse)
 
     return app
 
