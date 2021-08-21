@@ -11,6 +11,9 @@ from math import sqrt
 import moviepy.editor as mpy
 
 
+celery = celery_ext.celery
+
+
 # Errors
 class TimelapseError(Exception):
     pass
@@ -26,7 +29,7 @@ class TimelapseTmpFolderExistsError(TimelapseError):
         super().__init__(self, f'tmp folder already exists at {path}')
 
 
-@celery_ext.celery.task
+@celery.task
 def make_timelapse(game_id):
     logging.basicConfig(format='%(asctime)s|%(levelname)s| %(message)s',
                         filename=os.path.join(current_app.instance_path, 'vid_gen.log'),
