@@ -35,7 +35,8 @@
         </table>
         <div class="uk-margin" uk-grid>
             <a class="uk-button uk-button-primary uk-align-right" type="video/mp4"
-                href="{# url_for('index.timelapse', game_id=game['number']) #}">
+                href="{{ url_for('index.timelapse', game_id=game['number']) }}"
+                download>
                     Generate timelapse
             </a>
             <div class="uk-width-expand uk-margin-remove">

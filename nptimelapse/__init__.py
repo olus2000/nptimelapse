@@ -1,4 +1,5 @@
 import os
+import os.path
 import re
 import time
 
@@ -6,7 +7,7 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 from nptimelapse import index
-##from nptimelapse.model import
+# from nptimelapse.model import
 from nptimelapse.cli import init_db, fetch_owners
 from nptimelapse.db import db
 
@@ -22,10 +23,8 @@ def create_app(test_config=None):
 
 
     # ensure the instance folder exists
-    try:
+    if not os.path.exists(app.instance_path):
         os.mkdir(app.instance_path)
-    except OSError:
-        pass
 
     # connect to database
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'] \
