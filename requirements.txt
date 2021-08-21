@@ -6,3 +6,4 @@ sqlalchemy
 requests
 moviepy
 pillow
+celery
