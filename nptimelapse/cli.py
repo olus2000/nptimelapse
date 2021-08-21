@@ -4,7 +4,7 @@ from flask.cli import with_appcontext
 from sqlalchemy import func
 # from werkzeug.security import generate_password_hash
 
-from nptimelapse.db import db
+from nptimelapse.extensions import db
 from nptimelapse.model import *
 from nptimelapse.map_maker import Map
 

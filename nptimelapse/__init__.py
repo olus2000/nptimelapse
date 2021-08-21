@@ -9,7 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 from nptimelapse import index
 # from nptimelapse.model import
 from nptimelapse.cli import init_db, fetch_owners, make_timelapse
-from nptimelapse.db import db
+from nptimelapse.extensions import db, celery_ext
 
 
 def create_app(test_config=None):
@@ -30,6 +30,9 @@ def create_app(test_config=None):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'] \
         .format(instance=app.instance_path)
     db.init_app(app)
+
+    # initialise celery
+    celery_ext.init_app(app)
 
     # the simplest page
     @app.route('/hello')

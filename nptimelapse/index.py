@@ -3,10 +3,12 @@ from flask import Blueprint, render_template, url_for, flash, request, send_file
 from werkzeug.utils import redirect
 from sqlalchemy.sql import func
 
-from nptimelapse.db import db
+from nptimelapse.extensions import db
 from nptimelapse.model import Game, Star, Owner
 
 import requests
+import os
+import os.path
 
 
 bp = Blueprint('index', __name__, url_prefix='')
@@ -75,7 +77,7 @@ def browse_games():
     return render_template('browse_games.html', games=games)
 
 
-@bp.route('/game/<int:game_id>')
+@bp.route('/game/<int:game_id>', methods=('GET', 'POST')
 def game_info(game_id):
     # Query games
     game = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
@@ -90,7 +92,25 @@ def game_info(game_id):
                 'number': game[2].id,
                   'name': game[2].name,
             'close_date': game[2].close_date}
-    return render_template('game_info.html', game=game)
+    
+    # Timelapse status
+    video_cache = os.path.join(current_app.instance_path, 'video_cache')
+    tl_path = os.path.join(video_cache, f'{game[2].name.replace(" ", "_")}_{game[2].id}.mp4')
+    tmp_folder = os.path.join(video_cache, 'tmp')
+    if os.path.exists(tl_path):
+        tl_status = 'READY'
+    elif os.path.exists(tmp_folder):
+        tl_status = 'IN_PROGRESS'
+    else:
+        tl_status = 'NOT_READY'
+
+    if request.method == 'POST':
+        if tl_status != 'NOT_READY':
+            flash('A timelapse is already being generated.')
+        else:
+            
+
+    return render_template('game_info.html', game=game, tl_status=tl_status)
 
 
 '''

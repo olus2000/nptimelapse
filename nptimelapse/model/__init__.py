@@ -1,4 +1,4 @@
-from nptimelapse.db import db
+from nptimelapse.extensions import db
 
 
 class Game(db.Model):
