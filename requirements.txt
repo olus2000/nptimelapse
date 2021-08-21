@@ -7,4 +7,3 @@ requests
 moviepy
 pillow
 celery
-flask-celeryext

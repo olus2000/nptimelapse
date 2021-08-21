@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, url_for, flash, request, send_file, \
-                  current_app
+                  current_app, abort
 from werkzeug.utils import redirect
 from sqlalchemy.sql import func
+from celery.exceptions import TimeoutError
 
 from nptimelapse.extensions import db
 from nptimelapse.model import Game, Star, Owner
+from nptimelapse.tasks import make_timelapse, TimelapseTmpFolderExistsError
 
 import requests
 import os
@@ -77,25 +79,19 @@ def browse_games():
     return render_template('browse_games.html', games=games)
 
 
-@bp.route('/game/<int:game_id>', methods=('GET', 'POST')
+@bp.route('/game/<int:game_id>', methods=('GET', 'POST'))
 def game_info(game_id):
     # Query games
-    game = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
+    game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
         .filter(Game.id == game_id).join(Game.owners).group_by(Game.id).one_or_none()
-    if game is None:
+    if game_data is None:
         flash(f'Game {game_id} is not registered')
         return redirect(url_for('index.browse_games'))
-    
-    # Prepare data for the template
-    game = {'start_tick': game[0],
-              'end_tick': game[1],
-                'number': game[2].id,
-                  'name': game[2].name,
-            'close_date': game[2].close_date}
+    start_tick, end_tick, game = game_data
     
     # Timelapse status
     video_cache = os.path.join(current_app.instance_path, 'video_cache')
-    tl_path = os.path.join(video_cache, f'{game[2].name.replace(" ", "_")}_{game[2].id}.mp4')
+    tl_path = os.path.join(video_cache, f'{game.name.replace(" ", "_")}_{game.id}.mp4')
     tmp_folder = os.path.join(video_cache, 'tmp')
     if os.path.exists(tl_path):
         tl_status = 'READY'
@@ -108,9 +104,27 @@ def game_info(game_id):
         if tl_status != 'NOT_READY':
             flash('A timelapse is already being generated.')
         else:
-            
+            make_timelapse.delay(game_id)
+            tl_status = 'IN_PROGRESS'
 
-    return render_template('game_info.html', game=game, tl_status=tl_status)
+    return render_template('game_info.html',
+                           game=game,
+                           game_length=end_tick - start_tick + 1,
+                           tl_status=tl_status)
+
+
+@bp.route('/<int:game_id>/timelapse.mp4')
+def timelapse(game_id):
+    game = Game.query.filter(Game.id == game_id).one_or_none()
+    if game is None:
+        abort(404)
+    tl_path = os.path.join(current_app.instance_path,
+                           f'video_cache/{game.name.replace(" ", "_")}_{game.id}.mp4')
+    if not os.path.exists(tl_path):
+        abort(404)
+    return send_file(tl_path, as_attachment=True)
+
+    
 
 
 '''

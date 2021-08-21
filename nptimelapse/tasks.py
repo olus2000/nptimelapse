@@ -1,7 +1,9 @@
 from flask import current_app
+from sqlalchemy import func
 
-from nptimelapse.extensions import celery_ext
+from nptimelapse.extensions import celery, db
 from nptimelapse.map_maker import Map
+from nptimelapse.model import Game, Star, Owner
 
 import logging
 import os
@@ -9,9 +11,6 @@ import os.path
 import glob
 from math import sqrt
 import moviepy.editor as mpy
-
-
-celery = celery_ext.celery
 
 
 # Errors

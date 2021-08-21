@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_celeryext import FlaskCeleryExt
+from celery import Celery
 
 
 db = SQLAlchemy()
-celery_ext = FlaskCeleryExt()
+celery = Celery()

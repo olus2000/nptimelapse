@@ -8,8 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 from nptimelapse import index
 # from nptimelapse.model import
-from nptimelapse.cli import init_db, fetch_owners
-from nptimelapse.extensions import db, celery_ext
+from nptimelapse.cli import init_db, fetch_owners, purge_videos
+from nptimelapse.extensions import db, celery
 
 
 def create_app(test_config=None):
@@ -32,7 +32,7 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # initialise celery
-    celery_ext.init_app(app)
+    init_celery(app)
 
     # the simplest page
     @app.route('/hello')
@@ -54,8 +54,22 @@ def create_app(test_config=None):
     # commandline arguments
     app.cli.add_command(init_db)
     app.cli.add_command(fetch_owners)
+    app.cli.add_command(purge_videos)
 
     return app
+
+
+def init_celery(app):
+    app = app or create_app()
+    celery.conf.update(app.config)
+
+    class ContextTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
 
 
 def config_from_env(variable, default=None):

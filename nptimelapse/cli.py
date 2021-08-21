@@ -10,6 +10,9 @@ from nptimelapse.model import *
 from datetime import datetime
 import requests
 import logging
+import os
+import os.path
+import glob
 
 
 @click.command('init-db')
@@ -57,3 +60,12 @@ def fetch_owners(test):
         db.session.commit()
     logging.info('Fetching complete')
 
+
+@click.command('purge-videos')
+@with_appcontext
+def purge_videos():
+    video_cache = os.path.join(current_app.instance_path, 'video_cache')
+    if os.path.exists(video_cache):
+        videos = glob.glob(os.path.join(video_cache, '*.mp4'))
+        for video in videos:
+            os.remove(video)
