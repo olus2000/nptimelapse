@@ -68,7 +68,8 @@ def browse_games():
 
     # Query games
     games = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-        .join(Game.owners).group_by(Game.id).order_by(Game.id.desc()).all()
+        .join(Game.owners).group_by(Game.id) \
+        .order_by(Game.close_date, Game.name, Game.id).all()
 
     games = [{'start_tick': g[0],
                 'end_tick': g[1],
@@ -124,23 +125,7 @@ def timelapse(game_id):
         abort(404)
     return send_file(tl_path, as_attachment=True)
 
-    
 
-
-'''
-
-        flash(f'Game {game_id} is not registered')
-        return redirect(url_for('index.browse_games'))
-
-    
-    # Check if the timelapse is cached
-    tl_path = os.path.join(video_cache, f'{game.name.replace(" ", "_")}_{game.id}.mp4')
-    if os.path.exists(tl_path):
-        return send_file(tl_path, as_attachment=True)
-
-
-        flash('An error occured during timelapse generation. Try again in a few minutes '
-            'and contact the administartor if the problem persists.')
-        return redirect(url_for('index.game_info', game_id=game_id))
-
-'''
+@bp.route('/help')
+def site_help():
+    return render_template('help.html')

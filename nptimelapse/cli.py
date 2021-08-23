@@ -46,6 +46,10 @@ def fetch_owners(test):
             logging.warning(f'Fetch error on game {game.id}: {payload["error"]}')
             continue
         data = payload['scanning_data']
+        # Close a finished game
+        if data['game_over']:
+            game.close_date = datetime.now()
+            logging.info(f'Closed a finished game {game.id}')
         # Compare and update
         for star_id, star_data in data['stars'].items():
             owner = Owner.query.filter(Owner.game_id == game.id) \

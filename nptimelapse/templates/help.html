@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+<h2>{% block title %}Help{% endblock %}</h2>
+{% endblock %}
+
+
+{% block content %}
+    <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
+        <h1>Generating a timelapse</h1>
+        This site uses the Neptune's Pride API to record games and generate mp4 timelapses
+        showing empires' growth over time. It's a very simple process for the user, but
+        rendering videos is a hardware-intensive process so keep that in mind when waiting
+        for the render to complete.
+
+        <h3>Step 1: register a game</h3>
+        <p>To create a timelapse the site first needs a recorded game. Unfortunately NP's
+        API doesn't give historical info so the timelapse will start with the game state
+        from when it was first registered.</p>
+
+        <p>To register a game you need two pieces of information: a game's number and an
+        API key. Game number can be found in the game's address. Each NP game address has
+        the form<br>
+        <code>np.ironhelmet.com/game/XXXXXXXXXXXXXXXX</code><br>
+        This 16-digit number at the end is your address. Your API key is 6 characters can
+        be generated in the last section of game settings. Each time you generate an API
+        key the previous one is invalidated, so make sure to save it if you want to use it
+        somewhere else. You can enter these two values on the home page to register your
+        game.<p>
+
+        <p><i><b>WARNING!</b> Using your game number and API key it is possible to extract
+        tactical data like carrier positions. Be careful when sharing them. NPTimelapse
+        promises to never share your API key or any non-public information about your
+        game.</i></p>
+
+        <h3>Step 2: Request a timelapse</h3>
+        <p>After the site has recorded enough data to create timelapse find it on the
+        list and click on the card <i>(tip: games are sorted by game number)</i>. If you
+        see a button saying "Download timelapse" then hooray! The timelapse has already
+        been generated today and you can download it.</p>
+
+        <p>If the button says "Wait (refresh)" it means that the server is currently
+        generating a timelapse. Due to high resource cost of timelapse generation the
+        server can only generate one timelapse at a time so come back in a minute or two
+        and click the button or just refresh the page.</p>
+
+        <p>If the button says "Generate timelapse" press it to request a timelapse of
+        your game. The button should change to "Wait (refresh)" which means the server
+        started generating a timelapse. Come back in a couple of minutes and press the
+        button or just refresh the page to see if your timelapse is ready.</p>
+
+        <p>Once generated a timelapse is stored on the server until midnight GMT when all
+        timelapses are deleted to preserve disk space and allow for creation of new ones.
+        If you need the exact version of the timelapse make sure to download and save it.
+        </p>
+
+        <p><b>Notice:</b> In some rare cases you will come back after clicking "Generate
+        timelapse" and find out the button changed back to "Generate timelapse". This
+        means someone requested a timelapse generation at the exact same time as you and
+        their request got processed first. In this case just click the button again and
+        wait some more.</p>
+
+        <h5>Feedback, issues and credits</h5>
+        If you have any feedback or find any issues with the site @ me on
+        <a href="https://discordapp.com/invite/TYr9RrA">NP Discord</a> or
+        <a href="https://forum.ironhelmet.com">IronHelmet forum</a>, I'm @olus2000.<br>
+        Website by Aleksander "olus2000" Sabak. Source code and license avaliable on
+        <a href="https://github.com/olus2000/nptimelapse">github</a>.
+    </div>
+{% endblock %}
