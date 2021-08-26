@@ -6,7 +6,7 @@ import time
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
-from nptimelapse import index
+from nptimelapse import index, api
 # from nptimelapse.model import
 from nptimelapse.cli import init_db, fetch_owners, purge_videos
 from nptimelapse.extensions import db, celery
@@ -47,6 +47,7 @@ def create_app(test_config=None):
 
     # pages
     app.register_blueprint(index.bp)
+    app.register_blueprint(api.bp)
 
     # model
     # app.register_blueprint(user.bp)
