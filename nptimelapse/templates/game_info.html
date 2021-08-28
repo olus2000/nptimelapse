@@ -35,7 +35,7 @@
         </table>
         <form action="{{ url_for('index.timelapse_request', game_id=game.id) }}"
             method="GET">
-            Star apperiance:
+            Star style:
             <div class="uk-margin uk-grid-small uk-child-width-auto" uk-grid>
                 <label><input type="radio" class="uk-radio" name="star" value="none"
                     checked>
@@ -51,13 +51,13 @@
                     Contrast
                 </label>
             </div>
-            Edges:
+            Border style:
             <div class="uk-margin uk-grid-small uk-child-width-auto" uk-grid>
-                <label><input type="radio" class="uk-radio" name="edge" value="none"
+                <label><input type="radio" class="uk-radio" name="border" value="none"
                     checked>
                         None
                 </label>
-                <label><input type="radio" class="uk-radio" name="edge" value="organic"> 
+                <label><input type="radio" class="uk-radio" name="border" value="organic"> 
                     Organic
                 </label>
             </div>

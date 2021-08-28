@@ -111,8 +111,8 @@ def timelapse_request(game_id):
         star = request.args['star']
     else:
         star = 'none'
-    if 'edge' in request.args:
-        border = request.args['edge']
+    if 'border' in request.args:
+        border = request.args['border']
     else:
         border = 'none'
     if 'rescale' in request.args:
