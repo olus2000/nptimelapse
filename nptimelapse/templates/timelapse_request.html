@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+
+{% block header %}
+<h2>{% block title %}{{ game.name }}{% endblock %}</h2>
+{% endblock %}
+
+
+{% block content %}
+    <div class="uk-margin-auto uk-margin uk-width-xlarge uk-card uk-card-body uk-card-default">
+        <table class="uk-table uk-table-justify uk-width-1-1">
+            <a href="{{ url_for('index.game_info', game_id=game.id) }}">
+                <span uk-icon="icon: arrow-left"></span>
+                <small>{{ game.name }}</small>
+            </a>
+            <tbody>
+                <tr>
+                    <td style="text-align: left">Game number:</td>
+                    <td style="text-align: right">{{ game.id }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">Star style:</td>
+                    <td style="text-align: right">
+                        {{ star.capitalize() }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">Border style:</td>
+                    <td style="text-align: right">
+                        {{ border.capitalize() }}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left">Smoothness:</td>
+                    <td style="text-align: right">
+                        {{ smoothness }}
+                    </td>
+            </tbody>
+        </table>
+        {% if tl_status == 'IN_PROGRESS' %}
+                <a class="uk-button uk-button-default uk-width-1-1" href="">
+                    Wait (refresh)
+                </a>
+        {% elif tl_status == 'READY' %}
+                <a class="uk-button uk-button-primary uk-width-1-1" type="video/mp4"
+                    href="{{ url_for('index.timelapse', game_id=game.id, tl_name=tl_name) }}"
+                    download>
+                        Download timelapse
+                </a>
+        {% endif %}
+    </div>
+{% endblock %}

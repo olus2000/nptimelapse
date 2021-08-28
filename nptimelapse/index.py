@@ -7,6 +7,7 @@ from celery.exceptions import TimeoutError
 from nptimelapse.extensions import db
 from nptimelapse.model import Game, Star, Owner
 from nptimelapse.tasks import make_timelapse, TimelapseTmpFolderExistsError
+from nptimelapse.map_maker import COLS
 
 import requests
 import os
@@ -80,7 +81,7 @@ def browse_games():
     return render_template('browse_games.html', games=games)
 
 
-@bp.route('/game/<int:game_id>', methods=('GET', 'POST'))
+@bp.route('/game/<int:game_id>')
 def game_info(game_id):
     # Query games
     game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
@@ -91,8 +92,42 @@ def game_info(game_id):
     start_tick, end_tick, game = game_data
     
     # Timelapse status
+
+    return render_template('game_info.html',
+                           game=game,
+                           game_length=end_tick - start_tick + 1)
+
+
+@bp.route('/game/<int:game_id>/timelapse_request')
+def timelapse_request(game_id):
+    # Query game
+    game = Game.query.filter(Game.id == game_id).one_or_none()
+    if game is None:
+        flash(f'Game {game_id} is not registered!')
+        return redirect(url_for('index.browse_games'))
+
+    # Get request arguments
+    if 'star' in request.args:
+        star = request.args['star']
+    else:
+        star = 'none'
+    if 'edge' in request.args:
+        border = request.args['edge']
+    else:
+        border = 'none'
+    if 'rescale' in request.args:
+        smoothness = int(request.args['rescale']) + 1
+        rescale = 7 - smoothness
+        if rescale > 6:
+            rescale = 10
+    else:
+        smoothness = 1
+        rescale = 6
+
+    # Timelapse status
     video_cache = os.path.join(current_app.instance_path, 'video_cache')
-    tl_path = os.path.join(video_cache, f'{game.name.replace(" ", "_")}_{game.id}.mp4')
+    tl_name = f'{game.name.replace(" ", "_")}_{game.id}_{star}_{border}_{rescale}.mp4'
+    tl_path = os.path.join(video_cache, tl_name)
     tmp_folder = os.path.join(video_cache, 'tmp')
     if os.path.exists(tl_path):
         tl_status = 'READY'
@@ -101,26 +136,40 @@ def game_info(game_id):
     else:
         tl_status = 'NOT_READY'
 
-    if request.method == 'POST':
-        if tl_status != 'NOT_READY':
-            flash('A timelapse is already being generated.')
-        else:
-            make_timelapse.delay(game_id)
-            tl_status = 'IN_PROGRESS'
+    if tl_status == 'NOT_READY':
+        # Prepare map parameters
+        draw_params = {'rescale': rescale, 'pix_per_cell': 60 // rescale}
+        if star != 'none' :
+            if star == 'white':
+                draw_params['star_cols'] = tuple((255, 255, 255) for i in range(64))
+            elif star == 'black':
+                draw_params['star_cols'] = tuple((0, 0, 0) for i in range(64))
+            elif star == 'contrast':
+                draw_params['star_cols'] = tuple(
+                    (0, 0, 0) if c[0]*.299 + c[1]*.587 + c[2]*.114 > 128
+                    else (255, 255, 255) for c in COLS
+                )
+        if border != 'none':
+            draw_params['border'] = rescale / 100
 
-    return render_template('game_info.html',
-                           game=game,
-                           game_length=end_tick - start_tick + 1,
-                           tl_status=tl_status)
+        # Make the timelapse
+        make_timelapse.delay(game_id, tl_name, draw_params)
+        tl_status = 'IN_PROGRESS'
+
+    return render_template('timelapse_request.html',
+                           star=star, border=border,
+                           smoothness=smoothness,
+                           tl_name=tl_name,
+                           tl_status=tl_status,
+                           game=game)
 
 
-@bp.route('/<int:game_id>/timelapse.mp4')
-def timelapse(game_id):
+@bp.route('/game/<int:game_id>/timelapse/<string:tl_name>')
+def timelapse(game_id, tl_name):
     game = Game.query.filter(Game.id == game_id).one_or_none()
     if game is None:
         abort(404)
-    tl_path = os.path.join(current_app.instance_path,
-                           f'video_cache/{game.name.replace(" ", "_")}_{game.id}.mp4')
+    tl_path = os.path.join(current_app.instance_path, f'video_cache/{tl_name}')
     if not os.path.exists(tl_path):
         abort(404)
     return send_file(tl_path, as_attachment=True)

@@ -2,12 +2,12 @@
 
 
 {% block header %}
-<h2>{% block title %}{{ game['name'] }}{% endblock %}</h2>
+<h2>{% block title %}{{ game.name }}{% endblock %}</h2>
 {% endblock %}
 
 
 {% block content %}
-    <div class="uk-margin-auto uk-margin uk-width-1-3 uk-card uk-card-body uk-card-default">
+    <div class="uk-margin-auto uk-margin uk-width-xlarge uk-card uk-card-body uk-card-default">
         <table class="uk-table uk-table-justify uk-width-1-1">
             <caption>{{ game.name }}</caption>
             <tbody>
@@ -33,35 +33,45 @@
                 </tr>
             </tbody>
         </table>
-        <div class="uk-margin" uk-grid>
-            {% if tl_status == 'NOT_READY' %}
-                <form action="{{ url_for('index.game_info', game_id=game.id) }}"
-                    method="POST">
-                    <input class="uk-button uk-button-primary uk-align-left"
-                        type="submit" value="Generate timelapse">
-                </form>
-            {% elif tl_status == 'IN_PROGRESS' %}
-                <div>
-                    <a class="uk-button uk-button-default uk-align-left"
-                        href="{{ url_for('index.game_info', game_id=game.id) }}">
-                            Wait (refresh)
-                    </a>
-                </div>
-            {% elif tl_status == 'READY' %}
-                <div>
-                    <a class="uk-button uk-button-primary uk-align-left" type="video/mp4"
-                        href="{{ url_for('index.timelapse', game_id=game.id) }}"
-                        download>
-                            Download timelapse
-                    </a>
-                </div>
-            {% endif %}
-            <div class="uk-width-expand uk-margin-remove">
-            <a class="uk-button uk-button-default uk-align-right uk-margin-remove"
-                target="_blank" href="https://np.ironhelmet.com/game/{{ game.id }}">
-                    Visit game
-            </a>
+        <form action="{{ url_for('index.timelapse_request', game_id=game.id) }}"
+            method="GET">
+            Star apperiance:
+            <div class="uk-margin uk-grid-small uk-child-width-auto" uk-grid>
+                <label><input type="radio" class="uk-radio" name="star" value="none"
+                    checked>
+                        None
+                </label>
+                <label><input type="radio" class="uk-radio" name="star" value="white"> 
+                    White
+                </label>
+                <label><input type="radio" class="uk-radio" name="star" value="black"> 
+                    Black
+                </label>
+                <label><input type="radio" class="uk-radio" name="star" value="contrast"> 
+                    Contrast
+                </label>
             </div>
-        </div>
+            Edges:
+            <div class="uk-margin uk-grid-small uk-child-width-auto" uk-grid>
+                <label><input type="radio" class="uk-radio" name="edge" value="none"
+                    checked>
+                        None
+                </label>
+                <label><input type="radio" class="uk-radio" name="edge" value="organic"> 
+                    Organic
+                </label>
+            </div>
+            Smoothness:
+            <div class="uk-margin">
+                <input type="range" class="uk-range" name="rescale" value="0"
+                    min="-1" max="4" step="1">
+            </div>
+            <input class="uk-button uk-button-primary uk-align-left uk-width-1-1"
+                type="submit" value="Request timelapse">
+        </form>
+        <a class="uk-button uk-button-default uk-align-right uk-margin-remove uk-width-1-1"
+            target="_blank" href="https://np.ironhelmet.com/game/{{ game.id }}">
+                Visit game
+        </a>
     </div>
 {% endblock %}

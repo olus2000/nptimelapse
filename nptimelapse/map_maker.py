@@ -12,12 +12,16 @@ BASE = (
 )
 GREY = ((255, 255, 255), (0, 0, 0), (64, 64, 64))
 DRK = (1, .5, .75, .25, 7/8, 5/8, 3/8, 1/8)
-COLS = tuple(tuple(v * d for v in c) for d in DRK for c in BASE) + GREY
+COLS = tuple(tuple(int(v * d) for v in c) for d in DRK for c in BASE) + GREY
 
 MAX_DIST = .6
 RESCALE = 6
 PIX_PER_CELL = 10
 BORDER = -1
+'''
+PPC = 60 / RESCALE
+BOR = RESCALE / 100
+'''
 
 
 class Map:
@@ -37,8 +41,8 @@ class Map:
         self.max_dist = max_dist
         self.rescale = rescale
         self.pix_per_cell = pix_per_cell
-        self.cols = cols
-        self.star_cols = star_cols
+        self.cols = tuple(tuple(t) for t in cols)
+        self.star_cols = tuple(tuple(t) for t in star_cols)
         self.border = border
 
         self.stars = {star.id: star for star in stars}
@@ -96,9 +100,12 @@ class Map:
                     for ncy in range(cy - 1, cy + 2):
                         for star in self.grid[ncx][ncy]:
                             l = sqrt((mx - star.x)**2 + (my - star.y)**2)
+                            if abs(min_dist - l) <= self.border:
+                                nearest = -2
                             if l < min_dist:
+                                if abs(min_dist - l) > self.border:
+                                    nearest = self.owners[star.id]
                                 min_dist = l
-                                nearest = self.owners[star.id]
                 self.draw_px(x, y, self.cols[nearest])
 
     def update(self, owners):

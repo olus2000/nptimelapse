@@ -29,7 +29,7 @@ class TimelapseTmpFolderExistsError(TimelapseError):
 
 
 @celery.task
-def make_timelapse(game_id):
+def make_timelapse(game_id, tl_path, map_config={}):
     logging.basicConfig(format='%(asctime)s|%(levelname)s| %(message)s',
                         filename=os.path.join(current_app.instance_path, 'vid_gen.log'),
                         level=logging.INFO)
@@ -47,7 +47,7 @@ def make_timelapse(game_id):
         logging.error(f'Attempt to generate unregistered game {game_id}')
         raise TimelapseGameNotRegisteredError(game_id)
     start_tick, end_tick, game = game_data
-    tl_path = os.path.join(video_cache, f'{game.name.replace(" ", "_")}_{game.id}.mp4')
+    tl_path = os.path.join(video_cache, f'{tl_path}')
 
     # Check for tmp folder to see if the timelapse is not being created by another worker
     tmp_folder = os.path.join(video_cache, f'tmp')
@@ -59,7 +59,7 @@ def make_timelapse(game_id):
     # Prepare the map
     logging.info('Generation start...')
     stars = Star.query.filter(Star.game_id == game_id).all()
-    m = Map(stars)
+    m = Map(stars, **map_config)
 
     # Generate images
     for tick in range(start_tick, end_tick + 1):
