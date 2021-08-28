@@ -3,24 +3,26 @@ from PIL.ImageDraw import Draw
 from math import sqrt
 
 
-COLS = (
+BASE = (
     # Player colors
     (0, 0, 255), (0, 255, 255),
     (0, 255, 0), (255, 255, 0),
     (255, 128, 0), (255, 0, 0),
     (255, 0, 255), (128, 0, 255),
-    # Grays
-    (255, 255, 255), (0, 0, 0), (64, 64, 64),
 )
+GREY = ((255, 255, 255), (0, 0, 0), (64, 64, 64))
 DRK = (1, .5, .75, .25, 7/8, 5/8, 3/8, 1/8)
+COLS = tuple(tuple(v * d for v in c) for d in DRK for c in BASE) + GREY
+
 MAX_DIST = .6
 RESCALE = 6
 PIX_PER_CELL = 10
+BORDER = -1
 
 
 class Map:
-    def __init__(self, stars, max_dist=MAX_DIST, rescale=RESCALE,
-                 pix_per_cell=PIX_PER_CELL, cols=COLS, drk=DRK):
+    def __init__(self, stars, max_dist=MAX_DIST, rescale=RESCALE, border=BORDER,
+                 pix_per_cell=PIX_PER_CELL, cols=COLS, star_cols=COLS):
         
         # Calculate various values
         grid_lx = int(min(star.x for star in stars) // max_dist)
@@ -36,8 +38,9 @@ class Map:
         self.rescale = rescale
         self.pix_per_cell = pix_per_cell
         self.cols = cols
-        self.drk = drk
-        
+        self.star_cols = star_cols
+        self.border = border
+
         self.stars = {star.id: star for star in stars}
         self.owners = {star.id: -1 for star in stars}
         self.grid = []
@@ -54,6 +57,7 @@ class Map:
         for x in range(self.grid_size[0] - 1):
             for y in range(self.grid_size[1] - 1):
                 self.update_cell(x, y)
+        self.draw_stars()
 
     # Coordinate conversion
     def img_to_map(self, x, y):
@@ -66,15 +70,21 @@ class Map:
         cy = int(my // self.max_dist) + self.grid_off[1]
         return cx, cy
 
+    def map_to_img(self, mx, my):
+        x = int((mx / self.max_dist + self.grid_off[0]) * self.pix_per_cell)
+        y = int((my / self.max_dist + self.grid_off[1]) * self.pix_per_cell)
+        return x, y
+
     # Image processing
     def draw_px(self, x, y, c):
-        if c >= 0:
-            col = tuple(int(x * self.drk[c // 8]) for x in self.cols[c % 8])
-        else:
-            col = self.cols[c]
         self.draw.rectangle([x * self.rescale, y * self.rescale,
                              (x + 1) * self.rescale - 1, (y + 1) * self.rescale - 1],
-                            col, col)
+                            c, c)
+
+    def draw_stars(self):
+        for star in self.stars.values():
+            x, y = self.map_to_img(star.x, star.y)
+            self.draw_px(x, y, self.star_cols[self.owners[star.id]])
 
     def update_cell(self, cx, cy):
         for x in range(cx * self.pix_per_cell, (cx + 1) * self.pix_per_cell):
@@ -89,7 +99,7 @@ class Map:
                             if l < min_dist:
                                 min_dist = l
                                 nearest = self.owners[star.id]
-                self.draw_px(x, y, nearest)
+                self.draw_px(x, y, self.cols[nearest])
 
     def update(self, owners):
         update_grid = []
@@ -108,6 +118,8 @@ class Map:
             for y in range(self.grid_size[1] - 1):
                 if update_grid[x][y]:
                     self.update_cell(x, y)
+
+        self.draw_stars()
 
     def save(self, path):
         self.image.save(path)
