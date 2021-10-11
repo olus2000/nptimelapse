@@ -44,8 +44,9 @@ def browse_games():
                 flash('API error. Contact the administartor')
             else:
                 flash('Incorrect game number')
+        # Handle invalid games
         elif payload['scanning_data']['game_over']:
-            flash('Game has already ended')
+            flash('Game has already finished')
         elif payload['scanning_data']['total_stars'] > len(payload['scanning_data']['stars']):
             flash('Dark games are not yet supported')
         else:
@@ -92,8 +93,6 @@ def game_info(game_id):
         flash(f'Game {game_id} is not registered')
         return redirect(url_for('index.browse_games'))
     start_tick, end_tick, game = game_data
-    
-    # Timelapse status
 
     return render_template('game_info.html',
                            game=game,

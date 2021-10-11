@@ -29,21 +29,22 @@ class Map:
                  pix_per_cell=PIX_PER_CELL, cols=COLS, star_cols=COLS):
         
         # Calculate various values
+        # Max and min x and y values
         grid_lx = int(min(star.x for star in stars) // max_dist)
         grid_hx = int(max(star.x for star in stars) // max_dist) + 1
         grid_ly = int(min(star.y for star in stars) // max_dist)
         grid_hy = int(max(star.y for star in stars) // max_dist) + 1
-        self.grid_off = (-grid_lx, -grid_ly)
+        self.grid_off = (-grid_lx, -grid_ly)  # Grid offset
         self.grid_size = (grid_hx - grid_lx + 1, grid_hy - grid_ly + 1)
         self.im_size = tuple(rescale * pix_per_cell * (i - 1) for i in self.grid_size)
 
         # Set parameters
         self.max_dist = max_dist
-        self.rescale = rescale
-        self.pix_per_cell = pix_per_cell
-        self.cols = tuple(tuple(t) for t in cols)
-        self.star_cols = tuple(tuple(t) for t in star_cols)
-        self.border = border
+        self.rescale = rescale  # How many actual pixels per percieved pixel
+        self.pix_per_cell = pix_per_cell  # How many percieved pixels per grid cell
+        self.cols = tuple(tuple(t) for t in cols)  # Colors
+        self.star_cols = tuple(tuple(t) for t in star_cols)  # Star colors
+        self.border = border  # Border "width"
 
         self.stars = {star.id: star for star in stars}
         self.owners = {star.id: -1 for star in stars}
@@ -64,32 +65,38 @@ class Map:
         self.draw_stars()
 
     # Coordinate conversion
+    # Percieved pixels to np coordinates
     def img_to_map(self, x, y):
         mx = (x / self.pix_per_cell - self.grid_off[0]) * self.max_dist
         my = (y / self.pix_per_cell - self.grid_off[1]) * self.max_dist
         return mx, my
 
+    # Np coordinates to grid cells
     def map_to_cell(self, mx, my):
         cx = int(mx // self.max_dist) + self.grid_off[0]
         cy = int(my // self.max_dist) + self.grid_off[1]
         return cx, cy
 
+    # Np coordinates to percieved pixels
     def map_to_img(self, mx, my):
         x = int((mx / self.max_dist + self.grid_off[0]) * self.pix_per_cell)
         y = int((my / self.max_dist + self.grid_off[1]) * self.pix_per_cell)
         return x, y
 
     # Image processing
+    # Draw a percieved pixel
     def draw_px(self, x, y, c):
         self.draw.rectangle([x * self.rescale, y * self.rescale,
                              (x + 1) * self.rescale - 1, (y + 1) * self.rescale - 1],
                             c, c)
 
+    # Draw percieved pixels for stars
     def draw_stars(self):
         for star in self.stars.values():
             x, y = self.map_to_img(star.x, star.y)
             self.draw_px(x, y, self.star_cols[self.owners[star.id]])
 
+    # Redraw a grid cell
     def update_cell(self, cx, cy):
         for x in range(cx * self.pix_per_cell, (cx + 1) * self.pix_per_cell):
             for y in range(cy * self.pix_per_cell, (cy + 1) * self.pix_per_cell):
@@ -116,11 +123,13 @@ class Map:
         for owner in owners:
             star = self.stars[owner.star_id]
             cx, cy = self.map_to_cell(star.x, star.y)
+            # Mark each possibly affected grid cell
             for x in range(cx - 1, cx + 2):
                 for y in range(cy - 1, cy + 2):
                     update_grid[x][y] = True
             self.owners[star.id] = owner.player
 
+        # Redraw every possibly affected cell
         for x in range(self.grid_size[0] - 1):
             for y in range(self.grid_size[1] - 1):
                 if update_grid[x][y]:
