@@ -46,6 +46,8 @@ def browse_games():
                 flash('Incorrect game number')
         elif payload['scanning_data']['game_over']:
             flash('Game has already ended')
+        elif payload['scanning_data']['total_stars'] > len(payload['scanning_data']['stars']):
+            flash('Dark games are not yet supported')
         else:
             # Register the new game in DB
             data = payload['scanning_data']
