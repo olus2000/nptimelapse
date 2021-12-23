@@ -10,6 +10,7 @@ from nptimelapse.tasks import make_timelapse, TimelapseTmpFolderExistsError
 from nptimelapse.map_maker import COLS
 
 import requests
+import glob
 import os
 import os.path
 
@@ -102,10 +103,12 @@ def game_info(game_id):
 @bp.route('/game/<int:game_id>/timelapse_request')
 def timelapse_request(game_id):
     # Query game
-    game = Game.query.filter(Game.id == game_id).one_or_none()
-    if game is None:
+    game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
+        .filter(Game.id == game_id).join(Game.owners).group_by(Game.id).one_or_none()
+    if game_data is None:
         flash(f'Game {game_id} is not registered!')
         return redirect(url_for('index.browse_games'))
+    start_tick, end_tick, game = game_data
 
     # Get request arguments
     if 'star' in request.args:
@@ -130,12 +133,21 @@ def timelapse_request(game_id):
     tl_name = f'{game.name.replace(" ", "_")}_{game.id}_{star}_{border}_{rescale}.mp4'
     tl_path = os.path.join(video_cache, tl_name)
     tmp_folder = os.path.join(video_cache, 'tmp')
+    game_length = end_tick - start_tick + 1
     if os.path.exists(tl_path):
         tl_status = 'READY'
+        progress = game_length
     elif os.path.exists(tmp_folder):
         tl_status = 'IN_PROGRESS'
+        # An integer from the highest image name
+        files = glob.glob(os.path.join(tmp_folder, '*.png'))
+        if files:
+            progress = int(max(files)[-8:-4]) - start_tick
+        else:
+            progress = 0
     else:
         tl_status = 'NOT_READY'
+        progress = 0
 
     if tl_status == 'NOT_READY':
         # Prepare map parameters
@@ -162,6 +174,8 @@ def timelapse_request(game_id):
                            smoothness=smoothness,
                            tl_name=tl_name,
                            tl_status=tl_status,
+                           progress=progress,
+                           game_length=game_length,
                            game=game)
 
 
