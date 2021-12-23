@@ -60,6 +60,7 @@ def create_app(test_config=None):
     return app
 
 
+# That's what an online tutorial told me
 def init_celery(app):
     app = app or create_app()
     celery.conf.update(app.config)
@@ -73,11 +74,12 @@ def init_celery(app):
     return celery
 
 
-def config_from_env(variable, default=None):
-    ans = os.environ.get(variable)
-    if not ans:
-        return default
-    return ans
+# I don't think that's used 
+##def config_from_env(variable, default=None):
+##    ans = os.environ.get(variable)
+##    if not ans:
+##        return default
+##    return ans
 
 
 app = create_app()
