@@ -37,7 +37,7 @@
                 <div class='uk-width-auto'>
                     {{ game['end_tick'] - game['start_tick'] + 1 }} ticks recorded<br>
                     {% if game['close_date'] %}
-                        Finished {{ game['close_date'].strftime('%Y/%M/%d') }}
+                        Finished {{ game['close_date'].strftime('%Y-%m-%d') }}
                     {% else %}
                         Running
                     {% endif %}
