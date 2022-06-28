@@ -1,8 +1,10 @@
 #!/usr/bin/bash
 
+export SCRIPT_NAME="/nptimelapse"
+
 if [ $# -lt 1 ]
 then
-    port=8000
+    port=8001
 else
     port=$1
 fi

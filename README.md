@@ -22,6 +22,10 @@ App specific config:
     this with anyone!_ It's recommended to use an urandom value, for example output of
     `python -c 'import os; print(os.urandom(16))'`.
 
+If you're using the provided startup script `start_server.sh` you may need to edit
+or comment out the `SCRIPT_NAME` variable. It sets the url prefix of the whole app on
+WSGI level so it's not configurable from inside Flask.
+
 All other config is specific to SQLAlchemy or Celery. Check out their respective docs for
 more info.
 
