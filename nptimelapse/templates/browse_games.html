@@ -34,6 +34,28 @@
             </form>
         </h4>
     </div>
+    <div class='uk-margin-auto uk-margin uk-width-2-3@s uk-card uk-card-body uk-card-default'>
+        <h4>
+            <form action="{{ url_for('index.timelapse_request', game_id='external') }}" method="GET" uk-grid>
+                <div class="uk-width-expand@m uk-first-column" uk-grid>
+                    <div class="uk-first-column" uk-margin>
+                            Game nr:
+                            <input class="uk-input uk-width-auto uk-margin-small-right"
+                                type="number" id="game_id" name="game_id"
+                                min="1000000000000000">
+                    </div>
+                    <div class="uk-width-auto@l" uk-margin>
+                            API key:
+                            <input class="uk-input uk-width-small uk-margin-small-right"
+                                type="text" id="api_key" name="api_key">
+                    </div>
+                </div>
+                <div class="uk-width-auto@m">
+                    <input class='uk-button uk-align-right uk-button-primary' type='submit' value='Add game'>
+                </div>
+            </form>
+        </h4>
+    </div>
     {% for game in games %}
     <a href={{ url_for('index.game_info', game_id=game['number']) }}>
         <div class='uk-margin-auto uk-margin uk-width-2-3@s uk-card uk-card-body uk-card-default'>

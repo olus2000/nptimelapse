@@ -41,12 +41,21 @@ def make_timelapse(game_id, tl_path, map_config={}):
         os.mkdir(video_cache)
 
     # Get basic game info
-    game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-        .filter(Game.id == game_id).join(Game.owners).group_by(Game.id).one_or_none()
-    if game_data is None:
-        logging.error(f'Attempt to generate unregistered game {game_id}')
+    if game_id.isnumeric():
+        game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
+            .filter(Game.id == int(game_id)).join(Game.owners).group_by(Game.id).one_or_none()
+        if game_data is None:
+            logging.error(f'Attempt to generate unregistered game {game_id}')
+            raise TimelapseGameNotRegisteredError(game_id)
+        start_tick, end_tick, game = game_data
+    elif game_id == 'external':
+        payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php').json()
+        start_tick = min(min(int(tick) for tick in star['owners']) for star in payload['stars'].values())
+        end_tick = max(max(int(tick) for tick in star['owners']) for star in payload['stars'].values())
+        game = Game(id=payload['id'], name=payload['name'], close_date=payload['close_date'], api_key='')
+    else:
+        logging.error(f'Attempt to generate a game from an unrecognised id {game_id}')
         raise TimelapseGameNotRegisteredError(game_id)
-    start_tick, end_tick, game = game_data
     tl_path = os.path.join(video_cache, f'{tl_path}')
 
     # Check for tmp folder to see if the timelapse is not being created by another worker
@@ -58,15 +67,23 @@ def make_timelapse(game_id, tl_path, map_config={}):
 
     # Prepare the map
     logging.info('Generation start...')
-    stars = Star.query.filter(Star.game_id == game_id).all()
+    if game_id.isnumeric():
+        stars = Star.query.filter(Star.game_id == game_id).all()
+    elif game_id == 'external':
+        stars = [Star(game_id=payload['id'], **s) for s in payload['stars'].values()]
     m = Map(stars, **map_config)
 
     # Generate images
     for tick in range(start_tick, end_tick + 1):
         if tick % 24 == 0:
             logging.info(f'Generating tick {tick}')
-        owners = Owner.query.filter(Owner.game_id == game_id) \
+        if game_id.isnumeric():
+            owners = Owner.query.filter(Owner.game_id == game_id) \
             .filter(Owner.tick == tick).all()
+        elif game_id == 'external':
+            owners = [Owner(tick=k, player=v, star_id=star_id, game_id = payload['id'])
+                      for star_id, star in payload['stars'].items()
+                      for k, v in star['owners'].items()]
         if owners:
             m.update(owners)
         m.save(os.path.join(tmp_folder, f'{tick:04}.png'))
