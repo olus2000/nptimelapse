@@ -7,7 +7,7 @@
 
 
 {% block content %}
-    <div class='uk-margin-auto uk-margin uk-width-2-3 uk-card uk-card-body uk-card-default'>
+    <div class='uk-margin-auto uk-margin uk-width-2-3@s uk-card uk-card-body uk-card-default'>
         <h1>Generating a timelapse</h1>
         This site uses the Neptune's Pride API to record games and generate mp4 timelapses
         showing empires' growth over time. It's a very simple process for the user, but
@@ -86,6 +86,14 @@
             <li><b>Dark galaxy</b> - not allowed at all, planned in a future update.</li>
             <li><b>Proteus games</b> - custom colors and shapes don't affect the timelapse.</li>
         </ul>
+
+        <h3>API</h3>
+        You can get all data (except the API key) recorded for a game by performing a GET
+        request on address
+        <a href="{{ url_for('api.game_info', game_id='1234567890123456') }}">
+            {{ url_for('api.game_info', game_id='1234567890123456') }}
+        </a>
+        with your game number.
 
         <h4>Feedback, issues and credits</h4>
         If you have any feedback or find any issues with the site PM me on
