@@ -122,12 +122,13 @@ class Map:
         
         for owner in owners:
             star = self.stars[owner.star_id]
-            cx, cy = self.map_to_cell(star.x, star.y)
-            # Mark each possibly affected grid cell
-            for x in range(cx - 1, cx + 2):
-                for y in range(cy - 1, cy + 2):
-                    update_grid[x][y] = True
-            self.owners[star.id] = owner.player
+            if self.owners[star.id] != owner.player:
+                cx, cy = self.map_to_cell(star.x, star.y)
+                # Mark each possibly affected grid cell
+                for x in range(cx - 1, cx + 2):
+                    for y in range(cy - 1, cy + 2):
+                        update_grid[x][y] = True
+                self.owners[star.id] = owner.player
 
         # Redraw every possibly affected cell
         for x in range(self.grid_size[0] - 1):

@@ -34,7 +34,7 @@ def make_timelapse(game_id, tl_path, map_config={}):
     logging.basicConfig(format='%(asctime)s|%(levelname)s| %(message)s',
                         filename=os.path.join(current_app.instance_path, 'vid_gen.log'),
                         level=logging.INFO)
-    logging.info(f'Generat timelapse {game_id}')
+    logging.info(f'Generate timelapse {game_id}')
     
     # Make sure the video cache exists
     video_cache = os.path.join(current_app.instance_path, 'video_cache')
@@ -52,8 +52,10 @@ def make_timelapse(game_id, tl_path, map_config={}):
     elif game_id == 'external':
         payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php').json()
         start_tick = min(min(int(tick) for tick in star['owners']) for star in payload['stars'].values())
+        start_tick = 9
         end_tick = max(max(int(tick) for tick in star['owners']) for star in payload['stars'].values())
-        game = Game(id=payload['id'], name=payload['name'], close_date=payload['close_date'], api_key='')
+        end_tick = 220
+#        game = Game(id=payload['id'], name=payload['name'], close_date=payload['close_date'], api_key='')
     else:
         logging.error(f'Attempt to generate a game from an unrecognised id {game_id}')
         raise TimelapseGameNotRegisteredError(game_id)
@@ -71,7 +73,8 @@ def make_timelapse(game_id, tl_path, map_config={}):
     if game_id.isnumeric():
         stars = Star.query.filter(Star.game_id == int(game_id)).all()
     elif game_id == 'external':
-        stars = [Star(game_id=payload['id'], id=s_id, x=s['x'], y=s['y']) for s_id, s in payload['stars'].items()]
+        stars = [Star(game_id=int(payload['id']), id=int(s_id), x=s['x'], y=s['y'])
+                 for s_id, s in payload['stars'].items()]
     m = Map(stars, **map_config)
 
     # Generate images
@@ -82,9 +85,9 @@ def make_timelapse(game_id, tl_path, map_config={}):
             owners = Owner.query.filter(Owner.game_id == int(game_id)) \
             .filter(Owner.tick == tick).all()
         elif game_id == 'external':
-            owners = [Owner(tick=k, player=v, star_id=star_id, game_id = payload['id'])
+            owners = [Owner(tick=tick, player=int(star['owners'][str(tick)]), star_id=int(star_id), game_id=int(payload['id']))
                       for star_id, star in payload['stars'].items()
-                      for k, v in star['owners'].items()]
+                      if str(tick) in star['owners']]
         if owners:
             m.update(owners)
         m.save(os.path.join(tmp_folder, f'{tick:04}.png'))

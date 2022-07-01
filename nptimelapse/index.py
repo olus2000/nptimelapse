@@ -196,11 +196,8 @@ def timelapse_request(game_id):
                            game=game)
 
 
-@bp.route('/game/<int:game_id>/timelapse/<string:tl_name>')
+@bp.route('/game/<string:game_id>/timelapse/<string:tl_name>')
 def timelapse(game_id, tl_name):
-    game = Game.query.filter(Game.id == game_id).one_or_none()
-    if game is None:
-        abort(404)
     tl_path = os.path.join(current_app.instance_path, f'video_cache/{tl_name}')
     if not os.path.exists(tl_path):
         abort(404)
