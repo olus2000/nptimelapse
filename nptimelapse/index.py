@@ -85,16 +85,24 @@ def browse_games():
     return render_template('browse_games.html', games=games)
 
 
-@bp.route('/game/<int:game_id>')
+@bp.route('/game/<string:game_id>')
 def game_info(game_id):
-    # Query games
-    game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-        .filter(Game.id == game_id).join(Game.owners).group_by(Game.id).one_or_none()
-    if game_data is None:
-        flash(f'Game {game_id} is not registered')
+    if game_id.isnumeric():
+        # Query game
+        game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
+            .filter(Game.id == int(game_id)).join(Game.owners).group_by(Game.id).one_or_none()
+        if game_data is None:
+            flash(f'Game {game_id} is not registered!')
+            return redirect(url_for('index.browse_games'))
+        start_tick, end_tick, game = game_data
+    elif game_id == 'external':
+        payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php').json()
+        start_tick = min(min(int(tick) for tick in star['owners']) for star in payload['stars'].values())
+        end_tick = max(max(int(tick) for tick in star['owners']) for star in payload['stars'].values())
+        game = Game(id=game_id, name=payload['name'], close_date=payload['close_date'], api_key='')
+    else:
+        flash(f'Invalid game identifier: {game_id}!')
         return redirect(url_for('index.browse_games'))
-    start_tick, end_tick, game = game_data
-
     return render_template('game_info.html',
                            game=game,
                            game_length=end_tick - start_tick + 1)
@@ -102,23 +110,22 @@ def game_info(game_id):
 
 @bp.route('/game/<string:game_id>/timelapse_request')
 def timelapse_request(game_id):
-    match game_id:
-        case i if i.isnumeric():
-            # Query game
-            game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-                .filter(Game.id == int(game_id)).join(Game.owners).group_by(Game.id).one_or_none()
-            if game_data is None:
-                flash(f'Game {game_id} is not registered!')
-                return redirect(url_for('index.browse_games'))
-            start_tick, end_tick, game = game_data
-        case 'external':
-            payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php').json()
-            start_tick = min(min(int(tick) for tick in star['owners']) for star in payload['stars'].values())
-            end_tick = max(max(int(tick) for tick in star['owners']) for star in payload['stars'].values())
-            game = Game(id=payload['id'], name=payload['name'], close_date=payload['close_date'], api_key='')
-        case _:
-            flash(f'Invalid game identifier: {game_id}!')
+    if game_id.isnumeric():
+        # Query game
+        game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
+            .filter(Game.id == int(game_id)).join(Game.owners).group_by(Game.id).one_or_none()
+        if game_data is None:
+            flash(f'Game {game_id} is not registered!')
             return redirect(url_for('index.browse_games'))
+        start_tick, end_tick, game = game_data
+    elif game_id == 'external':
+        payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php').json()
+        start_tick = min(min(int(tick) for tick in star['owners']) for star in payload['stars'].values())
+        end_tick = max(max(int(tick) for tick in star['owners']) for star in payload['stars'].values())
+        game = Game(id=game_id, name=payload['name'], close_date=payload['close_date'], api_key='')
+    else:
+        flash(f'Invalid game identifier: {game_id}!')
+        return redirect(url_for('index.browse_games'))
 
     # Get request arguments
     if 'star' in request.args:

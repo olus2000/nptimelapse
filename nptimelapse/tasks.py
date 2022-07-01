@@ -11,6 +11,7 @@ import os.path
 import glob
 from math import sqrt
 import moviepy.editor as mpy
+import requests
 
 
 # Errors
@@ -68,9 +69,9 @@ def make_timelapse(game_id, tl_path, map_config={}):
     # Prepare the map
     logging.info('Generation start...')
     if game_id.isnumeric():
-        stars = Star.query.filter(Star.game_id == game_id).all()
+        stars = Star.query.filter(Star.game_id == int(game_id)).all()
     elif game_id == 'external':
-        stars = [Star(game_id=payload['id'], **s) for s in payload['stars'].values()]
+        stars = [Star(game_id=payload['id'], id=s_id, x=s['x'], y=s['y']) for s_id, s in payload['stars'].items()]
     m = Map(stars, **map_config)
 
     # Generate images
@@ -78,7 +79,7 @@ def make_timelapse(game_id, tl_path, map_config={}):
         if tick % 24 == 0:
             logging.info(f'Generating tick {tick}')
         if game_id.isnumeric():
-            owners = Owner.query.filter(Owner.game_id == game_id) \
+            owners = Owner.query.filter(Owner.game_id == int(game_id)) \
             .filter(Owner.tick == tick).all()
         elif game_id == 'external':
             owners = [Owner(tick=k, player=v, star_id=star_id, game_id = payload['id'])
