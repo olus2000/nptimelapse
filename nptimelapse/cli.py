@@ -33,8 +33,9 @@ def init_db(reset):
 # Used to fetch data from the np server. Run at least every hour.
 @click.command('fetch-owners')
 @click.option('--test/--no-test', default=False)
+@click.option('--close/--no-close', default=False)
 @with_appcontext
-def fetch_owners(test):
+def fetch_owners(test, close):
     logging.basicConfig(format='%(asctime)s|%(levelname)s| %(message)s', level=logging.INFO)
     games = Game.query.filter(Game.close_date == None).all()
     new_owners = []
@@ -49,6 +50,9 @@ def fetch_owners(test):
             # TODO: allow for updating the api_key
             # Errors at this point usually result from a changed api_key.
             logging.warning(f'Fetch error on game {game.id}: {payload["error"]}')
+            if close and payload['error'] == 'game not found':
+                game.close_date = datetime.now()
+                logging.info(f'Closed game {game.id} that couldn\'t be found')
             continue
         data = payload['scanning_data']
         # Close a game if finished
@@ -58,6 +62,9 @@ def fetch_owners(test):
         # Otherwise compare and update
         # TODO: add previously unseen stars to facilitate dark galaxies
         for star_id, star_data in data['stars'].items():
+            star = Star.query.filter(Star.game_id == game.id).filter(Star.id == int(star_id)).one_or_none()
+            if star is None:
+                new_owners.append(Star(id=int(star_id), game_id=game.id, x=star_data['x'], y=star_data['y']))
             owner = Owner.query.filter(Owner.game_id == game.id) \
                    .filter(Owner.star_id == int(star_id)) \
                    .order_by(Owner.tick.desc()).first()

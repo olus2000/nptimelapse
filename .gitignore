@@ -5,3 +5,5 @@ instance/*
 *.swp
 
 *venv*
+
+*elm-stuff*

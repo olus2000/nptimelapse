@@ -13,32 +13,46 @@
     <!-- mithril -->
     <script src='https://unpkg.com/mithril/mithril.js'></script>
 
+    <!-- template specific -->
+    {% block meta %}{% endblock %}
+
 </head>
 <body>
 <nav class="uk-navbar-container uk-navbar-transparent uk-dark uk-margin-small-top" uk-navbar>
-    <div class="uk-navbar-left">
+    {% if 'embed' not in request.args or not request.args['embed'] %}
+    <div class="uk-navbar-left uk-margin-left">
         <ul class="uk-navbar-nav">
             <li><a href={{ url_for('index.browse_games') }}>Home</a></li>
         </ul>
     </div>
+    {% endif %}
     <div class="uk-navbar-center">
         {% block header %}{% endblock %}
     </div>
+    {% if 'embed' not in request.args and not request.args['embed'] %}
     <div class='uk-navbar-right uk-margin-right'>
         <ul class='uk-navbar-nav'>
             <li><a href={{ url_for('index.site_help') }}>Help</a></li>
         </ul>
     </div>
+    {% endif %}
 </nav>
 <section class="content">
 {% if get_flashed_messages() %}
-    <div class='uk-margin-auto uk-margin uk-width-1-2 uk-card uk-card-body uk-card-default flash'
+    <div class='uk-margin-auto uk-margin uk-width-2-3@m uk-card uk-card-body uk-card-default flash'
         style='background: #ff000028'>
         {% for message in get_flashed_messages() %}
             {{ message }}<br>
         {% endfor %}
     </div>
 {% endif %}
+{% if request.args and 'what' in request.args %}
+<div class='uk-margin-auto uk-margin uk-width-2-3@m uk-card-body uk-card-default flash'
+    style='background: #0000ff28'>
+    Testing on production &lt;3 <br/>
+    {{ request.args }}
+{% endif %}
+</div>
 {% block content %}{% endblock %}
 </section>
 </body>

@@ -34,19 +34,8 @@
             </form>
         </h4>
     </div>
-<!--
-    <div class='uk-margin-auto uk-margin uk-width-2-3@s uk-card uk-card-body uk-card-default'>
-        <h4>
-            <form action="{{ url_for('index.game_info', game_id='external') }}" method="GET" uk-grid>
-                <div class="uk-width-auto@m">
-                    <input class='uk-button uk-align-right uk-button-primary' type='submit' value='Test'>
-                </div>
-            </form>
-        </h4>
-    </div>
--->
     {% for game in games %}
-    <a href={{ url_for('index.game_info', game_id=game['number']) }}>
+    <a href={{ url_for('index.game_info', source_id=game['number']) }}>
         <div class='uk-margin-auto uk-margin uk-width-2-3@s uk-card uk-card-body uk-card-default'>
             <div uk-grid>
                 <div class='uk-width-expand@m'>

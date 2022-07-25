@@ -13,6 +13,7 @@ import requests
 import glob
 import os
 import os.path
+from datetime import datetime
 
 
 bp = Blueprint('index', __name__, url_prefix='')
@@ -25,12 +26,8 @@ def browse_games():
         game_id = request.form['game_id']
         api_key = request.form['api_key']
 
-        # Check if game already exists
+        # Fetch game data from ironhelmet API and database
         exists = Game.query.filter(Game.id == game_id).one_or_none()
-        if exists:
-            return redirect(url_for('index.game_info', game_id=game_id))
-
-        # Fetch game data from ironhelmet API
         params = {'game_number': game_id,
                          'code': api_key,
                   'api_version': '0.1'}
@@ -39,17 +36,21 @@ def browse_games():
         # Handle API errors
         if 'error' in payload:
             error = payload['error']
-            if error == 'code not found in game':
+            if error == 'Code not found in game':
                 flash('Incorrect API key')
             elif error == 'api_version not supported':
-                flash('API error. Contact the administartor')
+                flash('API error. Contact the site owner')
             else:
                 flash('Incorrect game number')
+        # Check if game already exists
+        elif exists:
+            exists.api_key = api_key
+            return redirect(url_for('index.game_info', source_id=game_id))
         # Handle invalid games
         elif payload['scanning_data']['game_over']:
             flash('Game has already finished')
-        elif payload['scanning_data']['total_stars'] > len(payload['scanning_data']['stars']):
-            flash('Dark games are not yet supported')
+#        elif payload['scanning_data']['total_stars'] > len(payload['scanning_data']['stars']):
+#            flash('Dark games are not yet supported')
         else:
             # Register the new game in DB
             data = payload['scanning_data']
@@ -67,7 +68,7 @@ def browse_games():
                           for star_id, star in data['stars'].items() if star['puid'] >= 0]
             db.session.add_all(new_owners)
             db.session.commit()
-            return redirect(url_for('index.game_info', game_id=game_id))
+            return redirect(url_for('index.game_info', source_id=game_id))
 
         # If an error happened the normal page is displayed
 
@@ -85,46 +86,78 @@ def browse_games():
     return render_template('browse_games.html', games=games)
 
 
-@bp.route('/game/<string:game_id>')
-def game_info(game_id):
-    if game_id.isnumeric():
+@bp.route('/game/<string:source_id>')
+def game_info(source_id):
+    if source_id.isnumeric():
         # Query game
         game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-            .filter(Game.id == int(game_id)).join(Game.owners).group_by(Game.id).one_or_none()
+            .filter(Game.id == int(source_id)).join(Game.owners).group_by(Game.id).one_or_none()
         if game_data is None:
-            flash(f'Game {game_id} is not registered!')
+            flash(f'Game {source_id} is not registered!')
             return redirect(url_for('index.browse_games'))
         start_tick, end_tick, game = game_data
-    elif game_id == 'external':
-        payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php').json()
+    elif source_id == 'np2stats':
+        incorrect_request = False
+        if 'game_id' not in request.args:
+            flash(f'Invalid request: no game number!')
+            incorrect_request = True
+        if 'player_id' not in request.args:
+            flash(f'Invalid request: no player ID!')
+            incorrect_request = True
+        if 'key' not in request.args:
+            flash(f'Invalid request: no authentication key provided!')
+            incorrect_request = True
+        if incorrect_request:
+            return redirect(url_for('index.browse_games'))
+        payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php', params=request.args).json()
         start_tick = min(min(int(tick) for tick in star['owners']) for star in payload['stars'].values())
         end_tick = max(max(int(tick) for tick in star['owners']) for star in payload['stars'].values())
-        game = Game(id=game_id, name=payload['name'], close_date=payload['close_date'], api_key='')
+        game = Game(id=payload['id'], name=payload['name'], api_key='',
+                    close_date=datetime.strptime(payload['updated'], '%Y-%m-%d %H:%M:%S')
+                               if payload['game_over'] else None)
     else:
-        flash(f'Invalid game identifier: {game_id}!')
+        flash(f'Invalid game identifier: {source_id}!')
         return redirect(url_for('index.browse_games'))
     return render_template('game_info.html',
+                           source_id=source_id,
+                           url_params=request.args,
                            game=game,
                            game_length=end_tick - start_tick + 1)
 
 
-@bp.route('/game/<string:game_id>/timelapse_request')
-def timelapse_request(game_id):
-    if game_id.isnumeric():
+@bp.route('/game/<string:source_id>/timelapse_request')
+def timelapse_request(source_id):
+    if source_id.isnumeric():
         # Query game
         game_data = db.session.query(func.min(Owner.tick), func.max(Owner.tick), Game) \
-            .filter(Game.id == int(game_id)).join(Game.owners).group_by(Game.id).one_or_none()
+            .filter(Game.id == int(source_id)).join(Game.owners).group_by(Game.id).one_or_none()
         if game_data is None:
-            flash(f'Game {game_id} is not registered!')
+            flash(f'Game {source_id} is not registered!')
             return redirect(url_for('index.browse_games'))
         start_tick, end_tick, game = game_data
-    elif game_id == 'external':
-        payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php').json()
+        url_params = {}
+    elif source_id == 'np2stats':
+        incorrect_request = False
+        if 'game_id' not in request.args:
+            flash(f'Invalid request: no game number!')
+            incorrect_request = True
+        if 'player_id' not in request.args:
+            flash(f'Invalid request: no player ID!')
+            incorrect_request = True
+        if 'key' not in request.args:
+            flash(f'Invalid request: no authentication key provided!')
+            incorrect_request = True
+        if incorrect_request:
+            return redirect(url_for('index.browse_games'))
+        payload = requests.get('https://np2stats.dysp.info/api/timelapsedata.php', params=request.args).json()
         start_tick = min(min(int(tick) for tick in star['owners']) for star in payload['stars'].values())
         end_tick = max(max(int(tick) for tick in star['owners']) for star in payload['stars'].values())
-        game = Game(id=game_id, name=payload['name'], close_date=payload['close_date'], api_key='')
+        game = Game(id=payload['id'], name=payload['name'], api_key='',
+                    close_date=datetime.strptime(payload['updated'], '%Y-%m-%d %H:%M:%S')
+                               if payload['game_over'] else None)
+        url_params = {key: request.args[key] for key in ('game_id', 'player_id', 'key')}
     else:
-        flash(f'Invalid game identifier: {game_id}!')
+        flash(f'Invalid game identifier: {source_id}!')
         return redirect(url_for('index.browse_games'))
 
     # Get request arguments
@@ -144,10 +177,14 @@ def timelapse_request(game_id):
     else:
         smoothness = 1
         rescale = 6
+    if 'dysp' in request.args and request.args['dysp'].isnumeric():
+        dysp = request.args['dysp']
+    else:
+        dysp = 0
 
     # Timelapse status
     video_cache = os.path.join(current_app.instance_path, 'video_cache')
-    tl_name = f'{game.name.replace(" ", "_")}_{game.id}_{star}_{border}_{rescale}.mp4'
+    tl_name = f'{game.name.replace(" ", "_")}_{game.id}_{source_id}_{star}_{border}_{rescale}_{dysp}.mp4'
     tl_path = os.path.join(video_cache, tl_name)
     tmp_folder = os.path.join(video_cache, 'tmp')
     game_length = end_tick - start_tick + 1
@@ -183,10 +220,12 @@ def timelapse_request(game_id):
             draw_params['border'] = rescale / 100
 
         # Make the timelapse
-        make_timelapse.delay(game_id, tl_name, draw_params)
+        make_timelapse.delay(source_id, tl_name, draw_params, url_params)
         tl_status = 'IN_PROGRESS'
 
     return render_template('timelapse_request.html',
+                           source_id=source_id,
+                           url_params=url_params,
                            star=star, border=border,
                            smoothness=smoothness,
                            tl_name=tl_name,
@@ -196,8 +235,8 @@ def timelapse_request(game_id):
                            game=game)
 
 
-@bp.route('/game/<string:game_id>/timelapse/<string:tl_name>')
-def timelapse(game_id, tl_name):
+@bp.route('/game/<string:source_id>/timelapse/<string:tl_name>')
+def timelapse(source_id, tl_name):
     tl_path = os.path.join(current_app.instance_path, f'video_cache/{tl_name}')
     if not os.path.exists(tl_path):
         abort(404)
