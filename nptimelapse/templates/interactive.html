@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h2>{% block title %}Interactive{% endblock %}</h2>
+{% endblock %}
+
+
+{% block meta %}
+<script src={{ url_for('static', filename='elm/timelapse.js') }}></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='elm/slider.css') }}"/>
+{% endblock %}
+
+
+{% block content %}
+    <div class="uk-margin-auto uk-margin uk-width-xlarge uk-card uk-card-body uk-card-default">
+        <div id="app"></div>
+        <script>
+            var app = Elm.Timelapse.init({
+                node: document.getElementById('app'),
+                flags: "{{ url_for('api.game_info', game_id=source_id) }}"
+            });
+        </script>
+    </div>
+{% endblock %}

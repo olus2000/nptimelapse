@@ -78,7 +78,11 @@
                 <input type="hidden" name="{{ k }}" value="{{ v }}">
             {% endfor %}
         </form>
-        <a class="uk-button uk-button-default uk-align-right uk-margin-remove uk-width-1-1"
+        <a class="uk-button uk-button-default uk-align-right u-margin-remove uk-width-1-1"
+            href="{{ url_for('index.interactive_timelapse', source_id=game.id) }}">
+                Online timelapse
+        </a>
+        <a class="uk-button uk-button-default uk-align-right u-margin-remove uk-width-1-1"
             target="_blank" href="https://np.ironhelmet.com/game/{{ game.id }}">
                 Visit game
         </a>

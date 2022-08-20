@@ -1,10 +1,11 @@
-module Main exposing (..)
+module Timelapse exposing (..)
 
 
 import Browser
 import Html exposing (Html, button, div, text, br)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import Http
 import SingleSlider exposing (SingleSlider)
 import Svg exposing (Svg, svg, rect, circle)
 import Svg.Attributes exposing (x, y, width, height, viewBox, fill, r, cy, cx)
@@ -133,32 +134,8 @@ type alias Model =
   }
 
 
-init : Json.Decode.Value -> ( Model, Cmd Msg )
-init gameData =
-  let
-    initValue = 0
-    stars = decodeGameData gameData
-  in
-  case stars of
-    Stars starList ->
-      ( { tick = minTick stars
-        , stars = stars
-        , minX = mapFold .x min 0 starList
-        , minY = mapFold .y min 0 starList
-        , maxX = mapFold .x max 0 starList
-        , maxY = mapFold .y max 0 starList
-        , playing = False
-        , slider = SingleSlider.init
-          { min = toFloat ( minTick stars )
-          , max = toFloat ( maxTick stars )
-          , value = initValue
-          , step = 1
-          , onChange = SliderChange
-          } |> SingleSlider.withValueFormatter valueFormatter
-        }
-      , Cmd.none
-      )
-    _ -> ({ defaultModel | stars = stars }, Cmd.none)
+init : String -> ( Model, Cmd Msg )
+init sourceURL = ( defaultModel, getStars sourceURL )
 
 
 defaultModel : Model
@@ -189,6 +166,17 @@ subscriptions model =
     Time.every 41 Tick
   else 
     Sub.none
+
+
+-- FETCHING STARS
+
+
+getStars : String -> Cmd Msg
+getStars sourceURL =
+  Http.get
+  { url = sourceURL
+  , expect = Http.expectJson GotStars gameDataDecoder
+  }
 
 
 -- DECODING STARS
@@ -259,6 +247,7 @@ type Msg
   = SliderChange Float
   | Tick Time.Posix
   | PauseTrigger
+  | GotStars (Result Http.Error Stars)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -293,6 +282,30 @@ update msg model =
           }
         , Cmd.none
         )
+    GotStars result ->
+      case result of
+        Err _ -> ( { model | stars = Failed "Error fetching the game data" }, Cmd.none )
+        Ok stars ->
+          case stars of
+            Stars starList ->
+              ( { tick = minTick stars
+                , stars = stars
+                , minX = mapFold .x min 0 starList
+                , minY = mapFold .y min 0 starList
+                , maxX = mapFold .x max 0 starList
+                , maxY = mapFold .y max 0 starList
+                , playing = False
+                , slider = SingleSlider.init
+                  { min = toFloat ( minTick stars )
+                  , max = toFloat ( maxTick stars )
+                  , value = toFloat ( minTick stars )
+                  , step = 1
+                  , onChange = SliderChange
+                  } |> SingleSlider.withValueFormatter valueFormatter
+                }
+              , Cmd.none
+              )
+            _ -> ({ defaultModel | stars = stars }, Cmd.none)
 
 
 -- SLIDER FORMATTERS

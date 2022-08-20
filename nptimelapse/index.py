@@ -36,7 +36,7 @@ def browse_games():
         # Handle API errors
         if 'error' in payload:
             error = payload['error']
-            if error == 'Code not found in game':
+            if error == 'code not found in game':
                 flash('Incorrect API key')
             elif error == 'api_version not supported':
                 flash('API error. Contact the site owner')
@@ -45,6 +45,7 @@ def browse_games():
         # Check if game already exists
         elif exists:
             exists.api_key = api_key
+            db.session.commit()
             return redirect(url_for('index.game_info', source_id=game_id))
         # Handle invalid games
         elif payload['scanning_data']['game_over']:
@@ -123,6 +124,12 @@ def game_info(source_id):
                            url_params=request.args,
                            game=game,
                            game_length=end_tick - start_tick + 1)
+
+
+@bp.route('/game/<string:source_id>/interactive')
+def interactive_timelapse(source_id):
+    return render_template('interactive.html',
+                           source_id = source_id)
 
 
 @bp.route('/game/<string:source_id>/timelapse_request')
