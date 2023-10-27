@@ -48,9 +48,11 @@ NPTimelapse app defines the following commands using Flask CLI:
     Sets up tables in the database. If `--reset` is passed the tables are dropped and
     reset, else existing tables are unmodified.
 
- - `flask fetch-owners [ --test/--no-test ]`
+ - `flask fetch-owners [ --test/--no-test ] [--close/--no-close]`
     Makes a call to the Neptune's Pride API fetching star owners for all registered games.
     Updates the database with newly fetched information unless `--test` is pased.
+    If `--close` is passed automatically closes all games for which the fetch
+    failed. Useful after server downtime.
 
  - `flask purge-videos`
     Clears the video cache freeing the disk space and allowing for new timelapses to be
